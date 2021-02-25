@@ -14,17 +14,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include QMK_KEYBOARD_H
-#include "via_extras.h"
 
-#define _BASE     0
-#define _VIA1     1
-#define _VIA2     2
-#define _VIA3     3
+enum layer_names {
+  _BASE,
+  _VIA1,
+  _VIA2,
+  _VIA3
+};
 
 #define KC_DISC_MUTE KC_F23
 #define KC_DISC_DEAF KC_F24
 #define NUM_CUST_KEYCODES (_NUM_CUST_KCS - SAFE_RANGE)
 #define VIA_KEYCODE_RANGE 0x5F80
+
+#define QMK_KEYS_PER_SCAN 4
+#define USB_POLLING_INTERVAL_MS 1
 
 enum custom_keycodes {
   PROG = SAFE_RANGE,
@@ -50,7 +54,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
   [_VIA1] = LAYOUT_all(
-              RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12, KC_HOME,  KC_INS,
+              RESET,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______,  KC_END,
     RGB_TOG,  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
     _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______,
     _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -74,6 +78,103 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
 };
+
+void map_via_keycode(uint16_t * keycode) {
+  if (abs(*keycode - VIA_KEYCODE_RANGE) < NUM_CUST_KEYCODES) { //make into macro?
+    dprintf("VIA custom keycode found, mapping to QMK keycode.\n");
+    uint16_t new_keycode = (*keycode - VIA_KEYCODE_RANGE) + SAFE_RANGE;
+    dprintf("VIA KC: %u QMK KC: %u\n", *keycode, new_keycode);
+    *keycode = new_keycode;
+  }
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  map_via_keycode(&keycode);
+  // Send keystrokes to host keyboard, if connected (see readme)
+  process_record_remote_kb(keycode, record);
+  switch(keycode) {
+    case PROG:
+      if (record->event.pressed) {
+        rgblight_disable_noeeprom();
+        bootloader_jump();
+      }
+    break;
+
+    case DISC_MUTE:
+      if (record->event.pressed) {
+        tap_code(KC_DISC_MUTE);
+        if (!rgblight_is_enabled()) break;
+
+        if (muted) {
+          rgblight_enable_noeeprom();
+        } else {
+          rgblight_timer_disable();
+          uint8_t val = rgblight_get_val();
+          rgblight_sethsv_range(255, 255, val, 0, 1);
+        }
+        muted = !muted;
+      }
+    break;
+
+    case DISC_DEAF:
+      if (record->event.pressed) {
+        tap_code(KC_DISC_DEAF);
+        if (!rgblight_is_enabled()) break;
+
+        if (deafened) {
+          rgblight_enable_noeeprom();
+        } else {
+          rgblight_timer_disable();
+          uint8_t val = rgblight_get_val();
+          rgblight_sethsv_range(255, 255, val, 0, RGBLED_NUM-1);
+        }
+        deafened = !deafened;
+      }
+    break;
+
+    case SUPER_ALT_TAB:
+      if (record->event.pressed) {
+        if (!is_alt_tab_active) {
+          is_alt_tab_active = true;
+          register_code(KC_LALT);
+        }
+        alt_tab_timer = timer_read();
+        register_code(KC_TAB);
+      } else {
+        unregister_code(KC_TAB);
+      }
+      break;
+
+    default:
+    break;
+  }
+return true;
+}
+
+void encoder_update_user(uint8_t index, bool clockwise) {
+  // Encoder is mapped to volume functions by default
+  if (clockwise) {
+    tap_code(KC_VOLU);
+  } else {
+    tap_code(KC_VOLD);
+  }
+}
+
+void matrix_init_user(void) {
+  // Initialize remote keyboard, if connected (see readme)
+  matrix_init_remote_kb();
+}
+
+void matrix_scan_user(void) {
+  // Scan and parse keystrokes from remote keyboard, if connected (see readme)
+  matrix_scan_remote_kb();
+  if (is_alt_tab_active) {
+    if (timer_elapsed(alt_tab_timer) > 1000) {
+      unregister_code(KC_LALT);
+      is_alt_tab_active = false;
+    }
+  }
+}
 
 #ifdef OLED_DRIVER_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_180; }
@@ -187,91 +288,3 @@ void suspend_power_down_user(void) {
     oled_off();
 }
 #endif
-
-void map_via_keycode(uint16_t * keycode) {
-  if (abs(*keycode - VIA_KEYCODE_RANGE) < NUM_CUST_KEYCODES) { //make into macro?
-    dprintf("VIA custom keycode found, mapping to QMK keycode.\n");
-    uint16_t new_keycode = (*keycode - VIA_KEYCODE_RANGE) + SAFE_RANGE;
-    dprintf("VIA KC: %u QMK KC: %u\n", *keycode, new_keycode);
-    *keycode = new_keycode;
-  }
-}
-
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  map_via_keycode(&keycode);
-  // Send keystrokes to host keyboard, if connected (see readme)
-  process_record_remote_kb(keycode, record);
-  switch(keycode) {
-    case PROG:
-      if (record->event.pressed) {
-        rgblight_disable_noeeprom();
-        bootloader_jump();
-      }
-    break;
-
-    case DISC_MUTE:
-      if (record->event.pressed) {
-        tap_code(KC_DISC_MUTE);
-        if (!rgblight_is_enabled()) break;
-        
-        if (muted) {
-          rgblight_enable_noeeprom();
-        } else {
-          rgblight_timer_disable();
-          uint8_t val = rgblight_get_val();
-          rgblight_sethsv_range(255, 255, val, 0, 1);
-        }
-        muted = !muted;
-      }
-    break;
-
-    case DISC_DEAF:
-      if (record->event.pressed) {
-        tap_code(KC_DISC_DEAF);
-        if (!rgblight_is_enabled()) break;
-
-        if (deafened) {
-          rgblight_enable_noeeprom();
-        } else {
-          rgblight_timer_disable();
-          uint8_t val = rgblight_get_val();
-          rgblight_sethsv_range(255, 255, val, 0, RGBLED_NUM-1);
-        }
-        deafened = !deafened;
-      }
-    break;
-
-    case SUPER_ALT_TAB:
-      if (record->event.pressed) {
-        if (!is_alt_tab_active) {
-          is_alt_tab_active = true;
-          register_code(KC_LALT);
-        } 
-        alt_tab_timer = timer_read();
-        register_code(KC_TAB);
-      } else {
-        unregister_code(KC_TAB);
-      }
-      break;
-
-    default:
-    break;    
-  }
-return true;
-}
-
-void matrix_init_user(void) {
-  // Initialize remote keyboard, if connected (see readme)
-  matrix_init_remote_kb();
-}
-
-void matrix_scan_user(void) {
-  // Scan and parse keystrokes from remote keyboard, if connected (see readme)
-  matrix_scan_remote_kb();
-  if (is_alt_tab_active) {
-    if (timer_elapsed(alt_tab_timer) > 1000) {
-      unregister_code(KC_LALT);
-      is_alt_tab_active = false;
-    }
-  }
-}

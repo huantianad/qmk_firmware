@@ -27,8 +27,6 @@ enum layer_names {
 #define NUM_CUST_KEYCODES (_NUM_CUST_KCS - SAFE_RANGE)
 #define VIA_KEYCODE_RANGE 0x5F80
 
-#define QMK_KEYS_PER_SCAN 4
-#define USB_POLLING_INTERVAL_MS 1
 
 enum custom_keycodes {
   PROG = SAFE_RANGE,

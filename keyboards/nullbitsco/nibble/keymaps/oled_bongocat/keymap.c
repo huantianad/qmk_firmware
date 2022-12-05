@@ -99,6 +99,12 @@ bool tap_anim        = false;
 bool tap_anim_toggle = false;
 
 
+
+void suspend_power_down_user(void) {
+    oled_off();
+}
+
+
 // Decompress and write a precompressed bitmap frame to the OLED.
 // Documentation and python compression script available at:
 // https://github.com/nullbitsco/squeez-o

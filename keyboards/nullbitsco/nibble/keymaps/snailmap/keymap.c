@@ -30,11 +30,11 @@ enum layer_names {
 // NOTE: Default keymap layers were designed for ANSI split-space layout  http://www.keyboard-layout-editor.com/#/gists/f28bd5ff4e62f69e89896df3a59671c6
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_MA] = LAYOUT_ansi(
-                   KC_ESC,     KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,       KC_0,          KC_MINS, KC_EQL,  KC_BSPC, KC_DEL,
-        KC_MUTE,   KC_TAB,     KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,       KC_P,          KC_LBRC, KC_RBRC, KC_BSLS, LCTL(KC_F),
-        KC_CAPS,   MO(_L2),    KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,       KC_SCLN,       KC_QUOT,          KC_ENT,  KC_CALC,
-        TG(_L2),   KC_LSFT,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,     KC_SLSH,       KC_RSFT,          KC_UP,   KC_WHOM,
-        MO(_L3),   KC_LCTL,    KC_LGUI, KC_LALT,                   KC_SPC,                    MO(_L1), LCTL(KC_C), LCTL(KC_V),    KC_LEFT,          KC_DOWN, KC_RGHT
+                   KC_GRAVE,   KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,       KC_0,          KC_MINS, KC_EQL,  KC_BSPC, KC_PSCR,
+        KC_MPLY,   KC_TAB,     KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,       KC_P,          KC_LBRC, KC_RBRC, KC_BSLS, KC_DEL,
+        KC_ESC,    KC_CAPS,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,       KC_SCLN,       KC_QUOT,          KC_ENT,  KC_HOME,
+        _______,   KC_LSFT,    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,     KC_SLSH,       KC_RSFT,          KC_UP,   KC_END,
+        _______,   KC_LCTL,    KC_LGUI, KC_LALT,                   KC_SPC,                    _______, MO(_L3),    RCTL(KC_V),    KC_LEFT,          KC_DOWN, KC_RGHT
     ),
     [_L1] = LAYOUT_ansi(
                    KC_GRAVE,   _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______,       _______, _______, _______, _______,
@@ -51,31 +51,31 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,   _______,    _______, _______,                   KC_0,                      KC_PSLS, _______,    _______,       _______,          _______, _______
     ),
     [_L3] = LAYOUT_ansi(
-                   _______,    KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,      KC_F10,        KC_F11,  KC_F12,  _______, _______,
+                   RGB_M_P,    KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,      KC_F10,        KC_F11,  KC_F12,  _______, _______,
         RGB_TOG,   _______,    _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______,       _______, _______, _______, _______,
-        _______,   _______,    _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______,       _______,          _______, _______,
         KC_SYSREQ, _______,    _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______,       _______,          _______, _______,
-        _______,   _______,    _______, _______,                   _______,                   _______, _______,    _______,       _______,          _______, _______
+        _______,   _______,    _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______,       _______,          _______, _______,
+        _______,   _______,    _______, _______,                   _______,                   _______, _______,    RALT(KC_V),    _______,          _______, _______
     )
 };
 
 #ifdef OLED_ENABLE
 /*===========================================    OLED CONFIGURATION    ===========================================*/
-bool  oled_horizontal   = true;         // OLED rotation  (true = horizontal,  false = vertical)
+bool  oled_horizontal   = false;        // OLED rotation  (true = horizontal,  false = vertical)
 bool  ansi_layout       = true;         // ANSI or ISO layout  (true = ANSI,  false = ISO)
-bool  split_space       = true;         // Split spacebar  (true = split spacebar,  false = 6.25u or 7u spacebar)
+bool  split_space       = false;        // Split spacebar  (true = split spacebar,  false = 6.25u or 7u spacebar)
 bool  three_mods_left   = true;         // Left mods layout  (true = 3x 1.25u keys,  false = 2x 1.5u keys)
 bool  three_mods_right  = false;        // Right mods layout  (true = 3x 1u keys,  false = 2x 1.5u keys)
 bool  graph_direction   = true;         // Graph movement  (true = right to left,  false = left to right)
-float graph_top_wpm     = 100.0;        // Minimum WPM required to reach the top of the graph
+float graph_top_wpm     = 120.0;        // Minimum WPM required to reach the top of the graph
 int   graph_refresh     = 1000;         // In milliseconds, determines the graph-line frequency
 int   icon_med_wpm      = 50;           // WPM required to display the medium snail
 int   icon_fast_wpm     = 72;           // WPM required to display the fast snail
 // Layer names:  Should be exactly 5 characters in length if vertical display, or 6 characters if horizontal
-#define MA_LAYER_NAME     "QWERTY"      // Layer _MA name
-#define L1_LAYER_NAME     "ARROWS"      // Layer _L1 name
-#define L2_LAYER_NAME     "NUMPAD"      // Layer _L2 name
-#define L3_LAYER_NAME     "FUNCTN"      // Layer _L3 name
+#define MA_LAYER_NAME     "NORML"      // Layer _MA name
+#define L1_LAYER_NAME     "ARROW"      // Layer _L1 name
+#define L2_LAYER_NAME     "NUMPD"      // Layer _L2 name
+#define L3_LAYER_NAME     "FUNCT"      // Layer _L3 name
 /*================================================================================================================*/
 bool  first_loop  = true;
 int   timer       = 0;
@@ -456,6 +456,10 @@ void oled_task_user(void) {
         render_wpm_graph(current_wpm);
         timer = timer_read();
     }
+}
+
+void suspend_power_down_user(void) {
+    oled_off();
 }
 #endif
 

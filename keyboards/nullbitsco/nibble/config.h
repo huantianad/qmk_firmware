@@ -59,3 +59,7 @@
 /* Optional encoder pins */
 #define ENCODERS_PAD_A { B5 }
 #define ENCODERS_PAD_B { B4 }
+
+/* Random stuff */
+#define QMK_KEYS_PER_SCAN 4
+#define USB_POLLING_INTERVAL_MS 1
